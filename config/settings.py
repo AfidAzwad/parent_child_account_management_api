@@ -145,6 +145,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL='user.User'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR/'media'
+
 # Rest Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (

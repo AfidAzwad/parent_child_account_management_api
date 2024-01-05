@@ -52,7 +52,7 @@ class LoginAPIView(APIView):
 
 
 class FileUploadAPIView(APIView):
-    # parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (MultiPartParser, FormParser)
     serializer_class = FileInfoSerializer
     permission_classes = [IsAuthenticated,]
     
@@ -61,13 +61,11 @@ class FileUploadAPIView(APIView):
         data['uploaded_by'] = request.user.id
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
-            
             serializer.save()
             return Response(
                 serializer.data,
                 status=status.HTTP_201_CREATED
             )
-        
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
