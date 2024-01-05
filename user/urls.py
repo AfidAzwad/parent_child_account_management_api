@@ -1,7 +1,7 @@
 from django.urls import path
 from .parent_account_views import ParentRegisterView, VerifyOTPAndCreateUserView
 from .child_account_views import ChildRegisterAPIView
-from .common_views import LoginAPIView, FileUploadAPIView
+from .common_views import LoginAPIView, LogoutAPIView, FileUploadAPIView
 
 
 urlpatterns = [
@@ -15,5 +15,6 @@ urlpatterns = [
      
     # common endpoints
     path('user/login/', LoginAPIView.as_view(), name='user_login'),
+    path('user/logout/', LogoutAPIView.as_view(), name='user_logout'),
     path('upload-file/', FileUploadAPIView.as_view(), name='upload_file'),
 ]

@@ -3,10 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .emails import send_otp_via_email
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import FormParser, MultiPartParser
 from .serializers import FileInfoSerializer
+from .models import User, FileInfo
+from django.db.models import Q
 import logging
 
 
@@ -51,6 +53,19 @@ class LoginAPIView(APIView):
             return e
 
 
+class LogoutAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            logout(request)
+            
+            # removing the refresh token from cookies
+            response = Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
+            response.delete_cookie('refresh_token')
+            return response
+        else:
+            return Response({'error': 'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+
 class FileUploadAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     serializer_class = FileInfoSerializer
@@ -70,3 +85,20 @@ class FileUploadAPIView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+    
+    def get(self, request, *args, **kwargs):
+        user = request.user
+
+        if user.is_parent:
+            # If the user is a parent, retrieve files uploaded by both own and childs
+            files = FileInfo.objects.filter(
+                Q(uploaded_by=user) | Q(uploaded_by__parent_id=user)
+            )
+        elif user.is_child:
+            # If the user is a child, retrieve files uploaded by him/her
+            files = FileInfo.objects.filter(uploaded_by=user)
+        else:
+            files = FileInfo.objects.none()
+
+        serializer = self.serializer_class(files, many=True)
+        return Response(serializer.data)
