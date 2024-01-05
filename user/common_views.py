@@ -9,8 +9,9 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from .serializers import FileInfoSerializer
 from .models import User, FileInfo
 from django.db.models import Q
-from cryptography.fernet import Fernet
+from .utils import store_otp
 import logging
+import base64
 
 
 
@@ -32,13 +33,8 @@ class LoginAPIView(APIView):
                 logger.debug("Attempting to sending otp to verify parent user login !")
                 
                 otp = send_otp_via_email(user.email)
-                
-                # storing the encrypted OTP and email in the session for validation later
-                key = Fernet.generate_key() # generating a key
-                cipher = Fernet(key) # creating a Fernet cipher object
-                encrypted_otp = cipher.encrypt(otp.encode())
-        
-                request.session['encrypted_otp'] = encrypted_otp
+                hashed_otp = store_otp(otp)
+                request.session['encrypted_otp'] = hashed_otp
                 request.session['email'] = user.email
                 
                 return Response({'message': 'OTP sent successfully. Please verify to login !'}, status=status.HTTP_200_OK)

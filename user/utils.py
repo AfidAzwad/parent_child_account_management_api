@@ -1,5 +1,6 @@
 import random, string
 from django.utils.crypto import get_random_string
+import hashlib
 from .models import User
 
 
@@ -32,3 +33,11 @@ def check_is_strong_password(password, length=8):
     if not any(char.isupper() for char in password) or not any(char.islower() for char in password) or not any(char in string.punctuation for char in password):
         return False
     return True
+
+def store_otp(otp):
+    hashed_otp = hashlib.sha256(str(otp).encode()).hexdigest()
+    return hashed_otp
+
+def verify_otp(entered_otp, stored_hashed_otp):
+    user_provided_hashed_otp = hashlib.sha256(str(entered_otp).encode()).hexdigest()
+    return user_provided_hashed_otp == stored_hashed_otp
