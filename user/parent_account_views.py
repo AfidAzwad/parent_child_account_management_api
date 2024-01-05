@@ -76,6 +76,34 @@ class ParentRegisterView(APIView):
 
 
 class VerifyOTPAndCreateUserView(APIView):
+    """
+    API endpoint for verifying OTP and creating or logging in a parent user.
+
+    Validates the entered OTP against the encrypted OTP stored in the session,
+    checks if the user already exists, and either creates a new user or logs in
+    the existing user. Returns a token for authentication.
+
+    ---
+    # Request Body
+    - otp: integer, required, OTP entered by the user
+
+    # Response
+    - Success (200 OK):
+      {
+        "status": 200,
+        "token": "access_token",
+        "email": "user_email",        # (for newly created user)
+        "username": "user_username",  # (for newly created user)
+        "password": "user_password",  # (for newly created user)
+        "message": "You have successfully logged in!"  # (for existing user)
+      }
+    - Error (400 Bad Request):
+      {
+        "error": "Invalid OTP" | "User creation failed. Please try again !"
+      }
+    ---
+    """
+    
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
@@ -131,4 +159,3 @@ class VerifyOTPAndCreateUserView(APIView):
         else:
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
         
-    
