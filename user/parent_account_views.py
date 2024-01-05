@@ -9,6 +9,7 @@ from .models import User
 from .emails import send_otp_via_email
 from .utils import generate_unique_username, generate_password
 from django.contrib.auth import authenticate, login
+import logging
 
 
 
@@ -27,6 +28,10 @@ class ParentRegisterView(APIView):
         user = User.objects.filter(email=email).first()
         if user:
             return Response({'error': 'User is already exists with this email. Please login with username and password!'}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        logger = logging.getLogger(__name__)
+        logger.debug(f"Attempting to send otp to the given email: {email}")
         
         # sending otp to the given email
         otp = send_otp_via_email(email)
@@ -55,6 +60,10 @@ class VerifyOTPAndCreateUserView(APIView):
             if existing_user is None:
                 username = generate_unique_username()
                 password = generate_password()
+                
+                logger = logging.getLogger(__name__)
+                logger.debug(f"Attempting to create parent user with given email: {email_stored}")
+                
                 user = User(email=email_stored, username=username)
                 if user:
                     user.set_password(password)

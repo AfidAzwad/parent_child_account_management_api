@@ -4,3 +4,4 @@
 **/migrations/
 *.pyc
 /*.txt
+/*.pdf

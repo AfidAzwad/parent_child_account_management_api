@@ -155,6 +155,8 @@ REST_FRAMEWORK = {
     )
 }
 
+SESSION_COOKIE_AGE = 300 # 5 minutes
+
 # Set the expiration time for access tokens
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
