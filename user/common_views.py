@@ -16,7 +16,30 @@ import base64
 
 
 class LoginAPIView(APIView):
-    
+    """
+    API endpoint for user login.
+
+    Attempts to authenticate the user using the provided username and password.
+    If the user is a parent, sends an OTP via email for additional verification.
+    If the authentication is successful, returns a token for authorization.
+
+    ---
+    # Request Body
+    - username: string, required, user's username
+    - password: string, required, user's password
+
+    # Response
+    - Success (200 OK):
+      {
+        "message": "OTP sent successfully. Please verify to login !"  # (for parent user)
+        "token": "access_token"  # (for non-parent user)
+      }
+    - Error (400 Bad Request):
+      {
+        "error": "Wrong credentials!"  # (if authentication fails)
+      }
+    ---
+    """
     def post(self, request):
         try:
             data = request.data
@@ -55,6 +78,23 @@ class LoginAPIView(APIView):
 
 
 class LogoutAPIView(APIView):
+    """
+    API endpoint for user logout.
+
+    Logs out the authenticated user and removes the refresh token from cookies.
+
+    ---
+    # Response
+    - Success (200 OK):
+      {
+        "message": "Logout successful"
+      }
+    - Error (401 Unauthorized):
+      {
+        "error": "User not authenticated"
+      }
+    ---
+    """
     def post(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             logout(request)
@@ -68,6 +108,46 @@ class LogoutAPIView(APIView):
         
 
 class FileUploadAPIView(APIView):
+    """
+    API endpoint for file upload and retrieval.
+
+    Supports uploading files with authentication, associating them with the uploading user.
+    Additionally, allows retrieving files based on the user's role (parent or child).
+
+    ---
+    # Request (POST) Body
+    - file: file, required, the file to be uploaded
+
+    # Response (POST)
+    - Success (201 Created):
+      { "file": "file_url",
+        "uploaded_on": "2024-01-05T12:31:11.326389Z",
+        "uploaded_by": 123,
+      }
+    - Error (400 Bad Request):
+      {
+        "error": "Invalid file format"  # (if file format is not supported)
+      }
+
+    # Response (GET)
+    - Success (200 OK):
+      [
+        { "file": "file_url",
+            "uploaded_on": "2024-01-05T12:31:11.326389Z",
+            "uploaded_by": 123,
+        },
+        { "file": "file_url",
+            "uploaded_on": "2024-01-05T12:31:11.326389Z",
+            "uploaded_by": 23,
+        },
+        ...
+      ]
+    - Error (401 Unauthorized):
+      {
+        "error": "User not authenticated"
+      }
+    ---
+    """
     parser_classes = (MultiPartParser, FormParser)
     serializer_class = FileInfoSerializer
     permission_classes = [IsAuthenticated,]

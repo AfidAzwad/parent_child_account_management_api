@@ -37,10 +37,9 @@ class ParentRegisterView(APIView):
     ---
 
     Note:
-    - The OTP is encrypted before storage in the session using the Fernet symmetric key encryption.
-    - The encrypted OTP and email are stored in the session for subsequent validation.
+    - The OTP is hashed before storage in the session using sha256.
+    - The hashed OTP and email are stored in the session for subsequent validation and creating or login the user.
     """
-    
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
@@ -74,7 +73,7 @@ class VerifyOTPAndCreateUserView(APIView):
     """
     API endpoint for verifying OTP and creating or logging in a parent user.
 
-    Validates the entered OTP against the encrypted OTP stored in the session,
+    Validates the entered OTP against the hashed OTP stored in the session,
     checks if the user already exists, and either creates a new user or logs in
     the existing user. Returns a token for authentication.
 
@@ -98,7 +97,6 @@ class VerifyOTPAndCreateUserView(APIView):
       }
     ---
     """
-    
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):

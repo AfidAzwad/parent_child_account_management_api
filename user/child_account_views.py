@@ -9,6 +9,38 @@ import logging
 
 
 class ChildRegisterAPIView(APIView):
+    """
+    API endpoint for parent users to create child accounts.
+
+    Validates the password format and creates a child user associated with the parent's account.
+
+    ---
+    # Request Body
+    - password: string, required, the password for the child account
+
+    # Response
+    - Success (200 OK):
+      {
+        "status": 200,
+        "username": "child_username"
+      }
+    - Error (400 Bad Request):
+      {
+        "error": "Child account creation failed. Please try again !"  # (if user creation fails)
+        "message": "Wrong password format!",
+        "password_criteria": {
+          "minimum length": 8,
+          "require 1 uppercase": true,
+          "require 1 lowercase": true,
+          "require 1 special character": true
+        }
+      }
+    - Error (400 Bad Request):
+      {
+        "error": "You dont have permission to create child users. Only parent can create child user !"
+      }
+    ---
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
