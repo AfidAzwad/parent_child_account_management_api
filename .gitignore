@@ -3,6 +3,5 @@
 **/__pycache__/
 **/migrations/
 *.pyc
-/*.txt
 /*.pdf
 media/**
