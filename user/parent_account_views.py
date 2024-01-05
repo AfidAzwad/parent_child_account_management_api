@@ -9,6 +9,7 @@ from .models import User
 from .emails import send_otp_via_email
 from .utils import generate_unique_username, generate_password
 from django.contrib.auth import authenticate, login
+from cryptography.fernet import Fernet
 import logging
 
 
@@ -36,8 +37,12 @@ class ParentRegisterView(APIView):
         # sending otp to the given email
         otp = send_otp_via_email(email)
         
-        # storing the OTP and email in the session for validation later
-        request.session['otp'] = otp
+        # storing the encrypted OTP and email in the session for validation later
+        key = Fernet.generate_key() # generating a key
+        cipher = Fernet(key) # creating a Fernet cipher object
+        encrypted_otp = cipher.encrypt(otp.encode())
+
+        request.session['encrypted_otp'] = encrypted_otp
         request.session['email'] = email
 
         return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
@@ -50,13 +55,16 @@ class VerifyOTPAndCreateUserView(APIView):
         otp_entered = request.data.get('otp')
 
         # Retrieving the OTP and email from the session
-        otp_stored = request.session.get('otp')
+        otp_stored = request.session['encrypted_otp']
+        print(otp_stored)
+        decrypted_otp = cipher.decrypt(otp_stored).decode()
+        print(decrypted_otp)
         email_stored = request.session.get('email')
         
         # To check if OTP verification is for login or registration
         existing_user = User.objects.filter(email=email_stored).first()
 
-        if otp_entered == otp_stored:
+        if otp_entered == decrypted_otp:
             if existing_user is None:
                 username = generate_unique_username()
                 password = generate_password()
