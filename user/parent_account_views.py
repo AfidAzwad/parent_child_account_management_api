@@ -15,6 +15,33 @@ import logging
 
 
 class ParentRegisterView(APIView):
+    """
+    API endpoint for registering a new parent user.
+
+    Receives an email address in the request data, validates the format,
+    checks if a user with the given email already exists, sends an OTP to the
+    provided email, and stores the encrypted OTP and email in the session for validation.
+
+    ---
+    # Request Body
+    - email: string, required, valid email address
+
+    # Response
+    - Success (200 OK):
+      {
+        "message": "OTP sent successfully"
+      }
+    - Error (400 Bad Request):
+      {
+        "error": "Invalid email format" | "User is already exists with this email. Please login with username and password!"
+      }
+    ---
+
+    Note:
+    - The OTP is encrypted before storage in the session using the Fernet symmetric key encryption.
+    - The encrypted OTP and email are stored in the session for subsequent validation.
+    """
+    
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
